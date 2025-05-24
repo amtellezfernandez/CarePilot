@@ -4,7 +4,9 @@
     "version": "1.0",
     "description": "AI assistant for medical calls",
     "permissions": [
-        "activeTab"
+        "activeTab",
+        "tabCapture",
+        "offscreen"
     ],
     "content_scripts": [
         {
