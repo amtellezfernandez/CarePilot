@@ -1,7 +1,19 @@
 console.log('Background script loaded');
 
+// Track capture state
+let isCapturing = false;
+
 // Create offscreen document for audio processing
 async function createOffscreenDocument() {
+    // Check if offscreen document already exists
+    const existingContexts = await chrome.runtime.getContexts({
+        contextTypes: ['OFFSCREEN_DOCUMENT']
+    });
+
+    if (existingContexts.length > 0) {
+        console.log('Offscreen document already exists');
+        return;
+    }
     try {
         console.log('Creating offscreen document...');
         await chrome.offscreen.createDocument({
@@ -24,6 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     if (request.action === 'captureAudio') {
         console.log('Audio capture requested from tab:', sender.tab.id);
+        isCapturing = true;
 
         // Get MediaStreamId for the current tab (service worker can do this)
         chrome.tabCapture.getMediaStreamId({
@@ -69,6 +82,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
 
         // Return true to indicate we'll send response asynchronously
+        return true;
+    }
+
+    if (request.action === 'stopCapture') {
+        console.log('Received stop capture request');
+        isCapturing = false;
+
+        // Send stop message to offscreen document
+        chrome.runtime.sendMessage({
+            target: 'offscreen',
+            action: 'stopCapture'
+        });
+
+        // Respond to popup
+        sendResponse({ isCapturing: false });
+        return true;
+    }
+
+    if (request.action === 'getCaptureState') {
+        sendResponse({ isCapturing: isCapturing });
         return true;
     }
 }); 

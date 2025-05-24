@@ -1,6 +1,8 @@
 // Offscreen document for audio processing
 console.log('Offscreen document loaded for audio processing');
 
+// Store references for cleanup
+let mediaStream = null;
 let audioContext = null;
 let currentStream = null;
 
@@ -29,6 +31,9 @@ async function handleAudioCapture(streamId, sendResponse) {
         });
 
         console.log('Tab audio stream captured successfully');
+
+        // Store stream reference for cleanup
+        mediaStream = stream;
 
         // Create AudioContext and connect stream to prevent muting
         if (!audioContext) {
@@ -76,4 +81,29 @@ async function captureMicrophone() {
         console.error('Microphone capture failed:', error);
         throw error;
     }
-} 
+}
+
+// Listen for stop capture message
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'stopCapture') {
+        console.log('Stopping audio capture in offscreen document');
+
+        // Stop all audio tracks
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => {
+                console.log('Stopping track:', track.kind);
+                track.stop();
+            });
+            mediaStream = null;
+        }
+
+        // Close audio context
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+
+        // Notify background script
+        chrome.runtime.sendMessage({ action: 'captureStopped' });
+    }
+}); 
