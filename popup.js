@@ -2,6 +2,7 @@ console.log('Popup loaded');
 const startSection = document.getElementById('startSection');
 const recordingStatus = document.getElementById('recordingStatus');
 const stopButton = document.getElementById('stopButton');
+const captureToggle = document.getElementById('captureToggle');
 
 
 // Update your toggle button click handler to show/hide sections
@@ -13,7 +14,7 @@ captureToggle.addEventListener('click', function () {
 
     // Trigger audio capture when user opens popup (indicates user interaction)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0] && tabs[0].url.includes('meet.google.com')) {
+        if (tabs[0] && tabs[0].url && tabs[0].url.includes('meet.google.com')) {
             console.log('Sending audio capture request to Google Meet tab');
             chrome.tabs.sendMessage(tabs[0].id, { action: 'startAudioCapture' });
         }

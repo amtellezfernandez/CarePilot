@@ -104,4 +104,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ isCapturing: isCapturing });
         return true;
     }
+
+    if (request.action === 'audioLevel') {
+        console.log('🎤 AUDIO LEVEL - Avg:', request.average, 'Max:', request.max);
+        return true;
+    }
+
+    if (request.action === 'audioDebug') {
+        if (request.data) {
+            console.log('🔍 AUDIO DEBUG:', request.message, request.data);
+        } else {
+            console.log('🔍 AUDIO DEBUG:', request.message);
+        }
+        return true;
+    }
 }); 
